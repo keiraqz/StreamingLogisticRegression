@@ -17,7 +17,7 @@ rdd = sc.textFile(path).map(
 
 # column names
 keys = rdd.first()
-DataRow = namedtuple("DataRow", keys)
+# DataRow = namedtuple("DataRow", keys)
 
 # get data
 data = rdd.filter(
@@ -49,3 +49,5 @@ train_data, test_data = data.randomSplit((0.8, 0.2), seed=1800009193L)
 # fit the model
 model = LogisticRegressionWithLBFGS.train(train_data, regType="l1")
 
+y = test_data.map(lambda row: row.label).collect()
+yhat = model.predict(test_data.map(lambda row: row.features)).collect()
