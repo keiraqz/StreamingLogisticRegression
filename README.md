@@ -1,4 +1,4 @@
-# REAME or not
+# README or not
 
 
 
