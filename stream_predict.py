@@ -80,23 +80,35 @@ def redisSink(rdd):
 
 
 #### Online training
-def trainOnline(model, dstream):
-    """Train the model on the incoming dstream."""
-    model._validate(dstream)
+class MyStreamingLogisticRegressionWithSGD(StreamingLogisticRegressionWithSGD):
 
-    def save_and_update(rdd):
-        redisSink(rdd)
-        update(rdd)
+    def __init__(self, *args, **kwargs):
+        super(MyStreamingLogisticRegressionWithSGD, self).__init__(*args, **kwargs)
+        self._model = LogisticRegressionModel(
+            weights=trained_model.weights,
+            intercept=trained_model.intercept,
+            numFeatures=trained_model.numFeatures,
+            numClasses=trained_model.numClasses,
+        )
 
-    def update(rdd):
-        # LogisticRegressionWithSGD.train raises an error for an empty RDD.
-        if not rdd.isEmpty():
-            model._model = LogisticRegressionWithSGD.train(
-                rdd, self.numIterations, model.stepSize,
-                model.miniBatchFraction, model._model.weights,
-                regParam=model.regParam, convergenceTol=model.convergenceTol)
+    def trainOnline(self, dstream):
+        """Train the model on the incoming dstream."""
+        self._validate(dstream)
 
-    dstream.foreachRDD(save_and_update)
+        def save_and_update(rdd):
+            redisSink(rdd)
+            update(rdd)
+
+        def update(rdd):
+            # LogisticRegressionWithSGD.train raises an error for an empty RDD.
+            if not rdd.isEmpty():
+                self._model = LogisticRegressionWithSGD.train(
+                    rdd, self.numIterations, self.stepSize,
+                    self.miniBatchFraction, self._model.weights,
+                    regParam=self.regParam, convergenceTol=self.convergenceTol)
+
+        dstream.foreachRDD(save_and_update)
+
 
 # dstream should be a DStream object, got <class 'pyspark.mllib.linalg.DenseVector'>
 trainOnline(
