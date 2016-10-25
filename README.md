@@ -8,7 +8,7 @@
 	- kafka_2.11-0.8.2.2.jar
 		- metrics-core-2.2.0.jar
 
-### Train offline model
+### Train offline model in Spark
 
 ```
 # save model to file
@@ -16,6 +16,11 @@ $SPARK_HOME/bin/spark-submit spark_training.py
 ```
 
 ### Demo
+
+![Image of Pipeline](/flask/app/static/img/pipeline.png)
+![model](/flask/app/static/img/model_accuracy.png)
+
+
 
 -  Start zookeeper & Kafka
 
