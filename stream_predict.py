@@ -1,6 +1,7 @@
 from pyspark import SparkConf, SparkContext
 from pyspark.streaming import StreamingContext
 from pyspark.mllib.classification import LogisticRegressionModel
+from pyspark.mllib.classification import StreamingLogisticRegressionWithSGD
 from pyspark.streaming.kafka import KafkaUtils # kafka connector via Spark
 import redis # redis connector via Python
 
@@ -19,8 +20,10 @@ conn = redis.StrictRedis(
 conn.flushall()
 
 ######## Load Model ########
-model = LogisticRegressionModel.load(sc, "model/LBFGS")
-
+# model = LogisticRegressionModel.load(sc, "model/LBFGS")
+trained_model = LogisticRegressionModel.load(sc, "model/SGD")
+model = StreamingLogisticRegressionWithSGD()
+model._model = trained_model
 
 ######## Load Data from Kafka and Parse ########
 # featurize
@@ -69,11 +72,40 @@ def redisSink(rdd):
     rdd.foreach(_add_redis)
 
 
-test_data.map(
-    lambda row: [model.predict(row.features), row.label] # predict the result
-).foreachRDD(
-    redisSink # add to redis
+# test_data.map(
+#     lambda row: [model.predict(row.features), row.label] # predict the result
+# ).foreachRDD(
+#     redisSink # add to redis
+# )
+
+
+#### Online training
+def trainOnline(model, dstream):
+    """Train the model on the incoming dstream."""
+    model._validate(dstream)
+
+    def save_and_update(rdd):
+        redisSink(rdd)
+        update(rdd)
+
+    def update(rdd):
+        # LogisticRegressionWithSGD.train raises an error for an empty RDD.
+        if not rdd.isEmpty():
+            model._model = LogisticRegressionWithSGD.train(
+                rdd, self.numIterations, model.stepSize,
+                model.miniBatchFraction, model._model.weights,
+                regParam=model.regParam, convergenceTol=model.convergenceTol)
+
+    dstream.foreachRDD(save_and_update)
+
+# dstream should be a DStream object, got <class 'pyspark.mllib.linalg.DenseVector'>
+trainOnline(
+    model,
+    test_data.map(
+        lambda row: [model.predictOn(row.features), row.label] # predict the result
+    )
 )
+
 
 
 ssc.start()

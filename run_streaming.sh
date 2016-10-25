@@ -7,5 +7,5 @@ nohup redis-server &
 
 source activate rasp_pi
 nohup python auto_producer.py &
-$SPARK_HOME/bin/spark-submit stream_predict.py
+# $SPARK_HOME/bin/spark-submit stream_predict.py
 
