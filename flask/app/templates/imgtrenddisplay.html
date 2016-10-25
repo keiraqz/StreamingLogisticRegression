@@ -1,0 +1,241 @@
+{% extends "base.html" %}
+{% block imagetrenddis %}
+
+<div class="row row-offcanvas">
+        <div class="col-xs-12 col-sm-9"  style="position:fixed;left:0;top:0;bottom:0;overflow-y:scroll;padding-top: 70px">
+          <div class="jumbotron">
+
+            <hr>
+          <!-- </div> -->
+          <div class="container">
+          <div class="row">
+             <div id="highchart" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
+          </div>
+          </div>
+          </div> -->
+      </div><!--/.col-xs-12.col-sm-9-->
+
+</div><!--/row-->
+
+
+
+<script>
+  function query_new_trend() {
+    jQuery.ajax({ 
+      url: '/count',
+      type: 'GET',
+      success: function(data) {
+
+      console.log(data);
+      if (data.output.length > 0) {
+            var x =  (new Date()).getTime(), 
+                y_0 = parseFloat(data.output[0].value);
+            if (y_0==null) {
+              y_0 = 0
+            }
+            var chart = jQuery('#highchart').highcharts();
+            var series_0 = chart.series[0];
+            series_0.addPoint([x, y_0], true, true);
+        // });
+      }
+      setTimeout(query_new_trend,1000);
+      }
+    });
+  }
+
+
+jQuery(function () {
+    // Get the CSV and create the chart
+    jQuery(document).ready(function () {
+        Highcharts.setOptions({
+            global: {
+                useUTC: false
+            }
+        });
+
+        jQuery('#highchart').highcharts({
+            chart: {
+                type: 'spline',
+                marginRight: 10,
+                events: {
+                    load: function () {
+                    }
+                }
+            },
+            title: {
+                text: 'Streaming Demo'
+            },
+            xAxis: {
+              type: 'datetime'
+            },
+            yAxis: [{ // left y axis
+                title: {
+                    text: null
+                },
+                labels: {
+                    align: 'left',
+                    x: 3,
+                    y: 16,
+                    format: '{value:.,0f}'
+                },
+                showFirstLabel: false
+            }],
+            legend: {
+                align: 'left',
+                verticalAlign: 'top',
+                y: 1,
+                floating: true,
+                borderWidth: 0
+            },
+            tooltip: {
+                shared: true,
+                crosshairs: true
+            },
+            plotOptions: {
+                series: {
+                    cursor: 'pointer',
+                    point: {
+                        events: {
+                            click: function (e) {
+                                hs.htmlExpand(null, {
+                                    pageOrigin: {
+                                        x: e.pageX || e.clientX,
+                                        y: e.pageY || e.clientY
+                                    },
+                                    headingText: this.series.name,
+                                    maincontentText: Highcharts.dateFormat('%A, %b %e, %Y', this.x) + ':<br/> ' +
+                                        this.y + ' visits',
+                                    width: 200
+                                });
+                            }
+                        }
+                    },
+                    marker: {
+                        lineWidth: 1
+                    }
+                }
+            },
+            series: [{
+                name: 'ACC',
+                data: (function () {
+                    var data = [], time = (new Date()).getTime(), i;
+                    for (i = -19; i <= 0; i += 1) {
+                        data.push({ x: time + i * 3000, y: 1 });
+                    }
+                    return data;
+                }())
+            }
+            ]
+        });
+
+  });
+});
+
+
+/**
+ * Sand-Signika theme for Highcharts JS
+ * @author Torstein Honsi
+ */
+
+// Load the fonts
+Highcharts.createElement('link', {
+   href: '//fonts.googleapis.com/css?family=Signika:400,700',
+   rel: 'stylesheet',
+   type: 'text/css'
+}, null, document.getElementsByTagName('head')[0]);
+
+// Add the background image to the container
+Highcharts.wrap(Highcharts.Chart.prototype, 'getContainer', function (proceed) {
+   proceed.call(this);
+   this.container.style.background = 'url(http://www.highcharts.com/samples/graphics/sand.png)';
+});
+
+Highcharts.theme = {
+   colors: ["#f45b5b", "#8085e9", "#8d4654", "#7798BF", "#aaeeee", "#ff0066", "#eeaaee",
+      "#55BF3B", "#DF5353", "#7798BF", "#aaeeee"],
+   chart: {
+      backgroundColor: null,
+      style: {
+         fontFamily: "Signika, serif"
+      }
+   },
+   title: {
+      style: {
+         color: 'black',
+         fontSize: '16px',
+         fontWeight: 'bold'
+      }
+   },
+   subtitle: {
+      style: {
+         color: 'black'
+      }
+   },
+   tooltip: {
+      borderWidth: 0
+   },
+   legend: {
+      itemStyle: {
+         fontWeight: 'bold',
+         fontSize: '13px'
+      }
+   },
+   xAxis: {
+      labels: {
+         style: {
+            color: '#6e6e70'
+         }
+      }
+   },
+   yAxis: {
+      labels: {
+         style: {
+            color: '#6e6e70'
+         }
+      }
+   },
+   plotOptions: {
+      series: {
+         shadow: true
+      },
+      candlestick: {
+         lineColor: '#404048'
+      },
+      map: {
+         shadow: false
+      }
+   },
+
+   // Highstock specific
+   navigator: {
+      xAxis: {
+         gridLineColor: '#D0D0D8'
+      }
+   },
+   rangeSelector: {
+      buttonTheme: {
+         fill: 'white',
+         stroke: '#C0C0C8',
+         'stroke-width': 1,
+         states: {
+            select: {
+               fill: '#D0D0D8'
+            }
+         }
+      }
+   },
+   scrollbar: {
+      trackBorderColor: '#C0C0C8'
+   },
+   // General
+   background2: '#E0E0E8'   
+};
+
+// Apply the theme
+Highcharts.setOptions(Highcharts.theme);
+
+  jQuery().ready(function() {
+    query_new_trend();
+  });
+</script>
+{% endblock %}

@@ -1,15 +1,8 @@
 import random
 import numpy
-import sys
-import six
-import json
-import os
 import time
 from datetime import datetime
-from twilio.rest import TwilioRestClient
 from kafka import KafkaProducer
-import multiprocessing
-from multiprocessing import Process
 
 
 class Producer(object):
