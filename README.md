@@ -78,3 +78,8 @@ sudo /usr/local/zookeeper/bin/zkServer.sh stop
 - for Python (pip install)
 	- kafka-python==1.0.2
 	- redis==2.10.5
+
+
+### Dataset
+
+Mohammad, Rami, McCluskey, T.L. and Thabtah, Fadi Abdeljaber. (2015). Phishing Websites Data Set. UCI Machine Learning Repository [https://archive.ics.uci.edu/ml/datasets/Phishing+Websites#].
