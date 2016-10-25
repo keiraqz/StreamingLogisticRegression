@@ -1,12 +1,8 @@
 # README or not
 
+![Image of Pipeline](/flask/app/static/img/pipeline.png)
+![model](/flask/app/static/img/model_accuracy.png)
 
-
-### Dependncies
-
-- spark-streaming-kafka-0-8_2.11-2.0.1.jar
-	- kafka_2.11-0.8.2.2.jar
-		- metrics-core-2.2.0.jar
 
 ### Train offline model in Spark
 
@@ -15,17 +11,19 @@
 $SPARK_HOME/bin/spark-submit spark_training.py
 ```
 
-### Demo
+- shortcut for streaming demo
 
-![Image of Pipeline](/flask/app/static/img/pipeline.png)
-![model](/flask/app/static/img/model_accuracy.png)
+```
+bash run_streaming.sh
+python flask/run.py
+```
 
-
+### Run the streaming example
 
 -  Start zookeeper & Kafka
 
 ```
-sudo /usr/local/zookeeper/bin/zkServer.sh start
+sudo /usr/local/zookeeper/bin/zkServer.sh start 
 sudo /usr/local/kafka/bin/kafka-server-start.sh /usr/local/kafka/config/server.properties &
 ```
 
@@ -60,6 +58,23 @@ localhost:5000
 -  Stop zookeeper & Kafka
 
 ```
-sudo /usr/local/zookeeper/bin/zkServer.sh stop
 sudo /usr/local/kafka/bin/kafka-server-stop.sh
+sudo /usr/local/zookeeper/bin/zkServer.sh stop
 ```
+
+
+### Tools and Dependncies
+- Scala 2.11
+- Spark 2.0.1
+- Zookeeper 3.4.8
+- Kafka 0.9
+- Redis 2.6.9
+
+- for Spark Streaming
+	- spark-streaming-kafka-0-8_2.11-2.0.1.jar
+		- kafka_2.11-0.8.2.2.jar
+			- metrics-core-2.2.0.jar
+
+- for Python (pip install)
+	- kafka-python==1.0.2
+	- redis==2.10.5

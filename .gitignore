@@ -2,3 +2,6 @@
 .DS_Store
 spark-warehouse/
 *.pyc
+*.out
+dump.rdb
+*.db
