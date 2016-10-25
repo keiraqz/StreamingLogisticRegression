@@ -1,7 +1,7 @@
 from pyspark import SparkConf, SparkContext
 from pyspark.streaming import StreamingContext
 from pyspark.mllib.classification import LogisticRegressionModel
-from pyspark.mllib.classification import StreamingLogisticRegressionWithSGD
+from pyspark.mllib.classification import (LogisticRegressionWithSGD, StreamingLogisticRegressionWithSGD)
 from pyspark.streaming.kafka import KafkaUtils # kafka connector via Spark
 import redis # redis connector via Python
 
@@ -19,11 +19,48 @@ conn = redis.StrictRedis(
         )
 conn.flushall()
 
+
+#### Online training
+trained_model = LogisticRegressionModel.load(sc, "model/SGD")
+
+
+class MyStreamingLogisticRegressionWithSGD(StreamingLogisticRegressionWithSGD):
+
+    def __init__(self, *args, **kwargs):
+        super(MyStreamingLogisticRegressionWithSGD, self).__init__(*args, **kwargs)
+        self._model = LogisticRegressionModel(
+            weights=trained_model.weights,
+            intercept=trained_model.intercept,
+            numFeatures=trained_model.numFeatures,
+            numClasses=trained_model.numClasses,
+        )
+
+    def trainOnline(self, dstream):
+        """Train the model on the incoming dstream."""
+        self._validate(dstream)
+
+        def save_and_update(rdd):
+            # redisSink(rdd)
+            update(rdd)
+
+        def update(rdd):
+            # LogisticRegressionWithSGD.train raises an error for an empty RDD.
+            if not rdd.isEmpty():
+                self._model = LogisticRegressionWithSGD.train(
+                    rdd, self.numIterations, self.stepSize,
+                    self.miniBatchFraction, self._model.weights,
+                    regParam=self.regParam, convergenceTol=self.convergenceTol)
+
+        # dstream.map(
+        #     lambda row: [model.predict(row.features), row.label, row] # predict the result
+        # ).foreachRDD(save_and_update)
+        dstream.foreachRDD(save_and_update)
+
+
 ######## Load Model ########
 # model = LogisticRegressionModel.load(sc, "model/LBFGS")
-trained_model = LogisticRegressionModel.load(sc, "model/SGD")
-model = StreamingLogisticRegressionWithSGD()
-model._model = trained_model
+model = MyStreamingLogisticRegressionWithSGD()
+# model._model = trained_model
 
 ######## Load Data from Kafka and Parse ########
 # featurize
@@ -70,53 +107,16 @@ def redisSink(rdd):
             value = int(value) + 1
         conn.set(cache_key, value)
     rdd.foreach(_add_redis)
+    # rdd.map(lambda row: [model.predict(row.features), row.label]).collect().pprint()
+    # rdd.map(lambda row: model.predict(row.features)).collect().pprint()
 
 
-# test_data.map(
-#     lambda row: [model.predict(row.features), row.label] # predict the result
-# ).foreachRDD(
-#     redisSink # add to redis
-# )
-
-
-#### Online training
-class MyStreamingLogisticRegressionWithSGD(StreamingLogisticRegressionWithSGD):
-
-    def __init__(self, *args, **kwargs):
-        super(MyStreamingLogisticRegressionWithSGD, self).__init__(*args, **kwargs)
-        self._model = LogisticRegressionModel(
-            weights=trained_model.weights,
-            intercept=trained_model.intercept,
-            numFeatures=trained_model.numFeatures,
-            numClasses=trained_model.numClasses,
-        )
-
-    def trainOnline(self, dstream):
-        """Train the model on the incoming dstream."""
-        self._validate(dstream)
-
-        def save_and_update(rdd):
-            redisSink(rdd)
-            update(rdd)
-
-        def update(rdd):
-            # LogisticRegressionWithSGD.train raises an error for an empty RDD.
-            if not rdd.isEmpty():
-                self._model = LogisticRegressionWithSGD.train(
-                    rdd, self.numIterations, self.stepSize,
-                    self.miniBatchFraction, self._model.weights,
-                    regParam=self.regParam, convergenceTol=self.convergenceTol)
-
-        dstream.foreachRDD(save_and_update)
-
-
-# dstream should be a DStream object, got <class 'pyspark.mllib.linalg.DenseVector'>
-trainOnline(
-    model,
-    test_data.map(
-        lambda row: [model.predictOn(row.features), row.label] # predict the result
-    )
+test_data.map(
+    lambda row: [model._model.predict(row.features), row.label] # predict the result
+).foreachRDD(
+    redisSink # add to redis
 )
+model.trainOnline(test_data)
 
 
 

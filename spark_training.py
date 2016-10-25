@@ -48,7 +48,7 @@ data = data.map(parsePoint)
 
 # do a training/test split
 # train_data, test_data = data.randomSplit((0.8, 0.2), seed=1800009193L) 
-train_data, test_data = data.randomSplit((0.1, 0.9), seed=1800009193L) # only train on 10% of data
+train_data, test_data = data.randomSplit((0.4, 0.6), seed=1800009193L) # only train on 10% of data
 
 
 # fit the model
