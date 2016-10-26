@@ -4,7 +4,7 @@
 ![model](/flask/app/static/img/model_accuracy.png)
 
 
-### Train offline model in Spark
+## Train offline model in Spark
 
 ```
 # save model to file
@@ -18,7 +18,7 @@ bash run_streaming.sh
 python flask/run.py
 ```
 
-### Run the streaming example
+## Run the streaming example
 
 -  Start zookeeper & Kafka
 
@@ -63,7 +63,7 @@ sudo /usr/local/zookeeper/bin/zkServer.sh stop
 ```
 
 
-### Tools and Dependncies
+## Tools and Dependncies
 - Scala 2.11
 - Spark 2.0.1
 - Zookeeper 3.4.8
@@ -79,7 +79,17 @@ sudo /usr/local/zookeeper/bin/zkServer.sh stop
 	- kafka-python==1.0.2
 	- redis==2.10.5
 
+### Install Tools
 
-### Dataset
+- Spark 2.0.1
+
+	Download: http://spark.apache.org/downloads.html
+
+- Others
+
+	For installing and configuring Zookeeper, Kafka and Redis, please refer to
+[install_tools.sh](https://github.com/keiraqz/SparkModeling/blob/master/install_tools.sh)
+
+## Dataset
 
 Mohammad, Rami, McCluskey, T.L. and Thabtah, Fadi Abdeljaber. (2015). Phishing Websites Data Set. UCI Machine Learning Repository [https://archive.ics.uci.edu/ml/datasets/Phishing+Websites#].
