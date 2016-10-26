@@ -48,7 +48,7 @@ data = data.map(parsePoint)
 
 # do a training/test split
 # train_data, test_data = data.randomSplit((0.8, 0.2), seed=1800009193L) 
-train_data, test_data = data.randomSplit((0.1, 0.9), seed=1800009193L) # only train on 10% of data
+train_data, test_data = data.randomSplit((0.02, 0.98), seed=1800009193L) # only train on 10% of data
 
 
 # fit the model
@@ -59,5 +59,5 @@ model = LogisticRegressionWithSGD.train(train_data, regType="l2")
 # model.save(sc, "model/LBFGS")
 model.save(sc, "model/SGD")
 
-y = test_data.map(lambda row: row.label).collect()
-yhat = model.predict(test_data.map(lambda row: row.features)).collect()
+# y = test_data.map(lambda row: row.label).collect()
+# yhat = model.predict(test_data.map(lambda row: row.features)).collect()

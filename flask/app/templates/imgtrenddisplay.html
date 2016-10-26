@@ -30,12 +30,18 @@
       if (data.output.length > 0) {
             var x =  (new Date()).getTime(), 
                 y_0 = parseFloat(data.output[0].value);
+                y_1 = parseFloat(data.output[1].value);
             if (y_0==null) {
               y_0 = 0
             }
+            if (y_1==null) {
+              y_1 = 0
+            }
             var chart = jQuery('#highchart').highcharts();
             var series_0 = chart.series[0];
+            var series_1 = chart.series[1];
             series_0.addPoint([x, y_0], true, true);
+            series_1.addPoint([x, y_1], false, true);
         // });
       }
       setTimeout(query_new_trend,1000);
@@ -69,7 +75,7 @@ jQuery(function () {
               type: 'datetime'
             },
             yAxis: [{ // left y axis
-                min: 0.88, max: 0.94,
+                // min: 0.7, max: 0.93,
                 title: {
                     text: null
                 },
@@ -79,7 +85,7 @@ jQuery(function () {
                     y: 16,
                     format: '{value:.,0f}'
                 },
-                showFirstLabel: false
+                showFirstLabel: true
             }],
             legend: {
                 align: 'left',
@@ -117,11 +123,21 @@ jQuery(function () {
                 }
             },
             series: [{
+                name: 'ACC pretrained',
+                data: (function () {
+                    var data = [], time = (new Date()).getTime(), i;
+                    for (i = -19; i <= 0; i += 1) {
+                        data.push({ x: time + i * 3000, y: 0 });
+                    }
+                    return data;
+                }())
+            },
+            {
                 name: 'ACC',
                 data: (function () {
                     var data = [], time = (new Date()).getTime(), i;
                     for (i = -19; i <= 0; i += 1) {
-                        data.push({ x: time + i * 3000, y: 0.9 });
+                        data.push({ x: time + i * 3000, y: 0 });
                     }
                     return data;
                 }())
