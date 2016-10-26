@@ -12,7 +12,7 @@
              <div id="highchart" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
           </div>
           </div>
-          </div> -->
+          </div>
       </div><!--/.col-xs-12.col-sm-9-->
 
 </div><!--/row-->
@@ -69,6 +69,7 @@ jQuery(function () {
               type: 'datetime'
             },
             yAxis: [{ // left y axis
+                min: 0.88, max: 0.94,
                 title: {
                     text: null
                 },
@@ -120,7 +121,7 @@ jQuery(function () {
                 data: (function () {
                     var data = [], time = (new Date()).getTime(), i;
                     for (i = -19; i <= 0; i += 1) {
-                        data.push({ x: time + i * 3000, y: 1 });
+                        data.push({ x: time + i * 3000, y: 0.9 });
                     }
                     return data;
                 }())

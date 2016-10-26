@@ -10,20 +10,27 @@ sc = SparkContext.getOrCreate(conf=conf)
 ssc = StreamingContext(sc, 1)
 KAFKA_BROKERS = "localhost:9092"
 
+
 ######## Clear Cache on Start ########
-conn = redis.StrictRedis(
-            host='localhost', 
-            port=6379, 
-            db=0, 
-            decode_responses=True
-        )
-conn.flushall()
+def clearCache():
+    conn = redis.StrictRedis(
+                host='localhost', 
+                port=6379, 
+                db=0, 
+                decode_responses=True
+            )
+    conn.flushall()
 
 
-#### Online training
-trained_model = LogisticRegressionModel.load(sc, "model/SGD")
+#### load trained model
+def loadModel():
+    ''' load trained LogisticRegressionModel model
+    '''
+    trained_model = LogisticRegressionModel.load(sc, "model/SGD")
+    return trained_model
 
 
+#### online training model with pre-trained model to start
 class MyStreamingLogisticRegressionWithSGD(StreamingLogisticRegressionWithSGD):
 
     def __init__(self, *args, **kwargs):
@@ -38,9 +45,7 @@ class MyStreamingLogisticRegressionWithSGD(StreamingLogisticRegressionWithSGD):
     def trainOnline(self, dstream):
         """Train the model on the incoming dstream."""
         self._validate(dstream)
-
         def save_and_update(rdd):
-            # redisSink(rdd)
             update(rdd)
 
         def update(rdd):
@@ -51,9 +56,6 @@ class MyStreamingLogisticRegressionWithSGD(StreamingLogisticRegressionWithSGD):
                     self.miniBatchFraction, self._model.weights,
                     regParam=self.regParam, convergenceTol=self.convergenceTol)
 
-        # dstream.map(
-        #     lambda row: [model.predict(row.features), row.label, row] # predict the result
-        # ).foreachRDD(save_and_update)
         dstream.foreachRDD(save_and_update)
 
 
@@ -107,8 +109,7 @@ def redisSink(rdd):
             value = int(value) + 1
         conn.set(cache_key, value)
     rdd.foreach(_add_redis)
-    # rdd.map(lambda row: [model.predict(row.features), row.label]).collect().pprint()
-    # rdd.map(lambda row: model.predict(row.features)).collect().pprint()
+
 
 
 test_data.map(
