@@ -20,7 +20,7 @@ class Producer(object):
 			time_field = datetime.now().strftime("%Y%m%d %H%M%S")
 			random_merchant = numpy.random.choice(self.merchants_list)
 			print random_merchant
-			time.sleep(0.5)
+			time.sleep(0.05)
 			self.producer.send('auto_trnx', random_merchant.strip().encode('utf8'))
 			msg_cnt += 1
 		

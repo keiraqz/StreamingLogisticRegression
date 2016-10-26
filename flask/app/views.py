@@ -24,14 +24,26 @@ def index():
 def get_count():
 	title = "Streaming Demo"
 	# key "predicted_result:actual_label"
-	response = redisClient.mget(["1:0.0","0:1.0","0:0.0","1:1.0"]) 
-	TP = float(response[3])
-	TN = float(response[2])
-	FP = float(response[0])
-	FN = float(response[1])
+	response = redisClient.mget([
+		"1:0.0:pre","0:1.0:pre","0:0.0:pre","1:1.0:pre", # with pretrained model
+		"1:0.0","0:1.0","0:0.0","1:1.0" # NO pretrained model
+	]) 
+	TP = float(response[3]) if response[3] else 0
+	TN = float(response[2]) if response[3] else 0
+	FP = float(response[0]) if response[3] else 0
+	FN = float(response[1]) if response[3] else 0
+	ACC_pre = (TP + TN) / (TP + TN + FP + FN)
+	TP = float(response[7]) if response[3] else 0
+	TN = float(response[6]) if response[3] else 0
+	FP = float(response[4]) if response[3] else 0
+	FN = float(response[5]) if response[3] else 0
 	ACC = (TP + TN) / (TP + TN + FP + FN)
+	print(ACC_pre)
 	print(ACC)
-	jsonresponse = [{"type": "ACC", "value": ACC}]
+	jsonresponse = [
+		{"type": "ACC pretrained", "value": ACC_pre},
+		{"type": "ACC", "value": ACC}
+		]
 	return jsonify(output=jsonresponse)
 
 
